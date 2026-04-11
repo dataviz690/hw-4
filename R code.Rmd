@@ -1,0 +1,60 @@
+---
+title: "hw-4 code"
+output: html_notebook
+---
+
+First i will load library and clean memory
+
+```{r}
+#Load Libraries
+rm(list = ls()) # clean memory
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(qicharts2)
+library(scales)
+
+```
+
+I will now load my data
+
+```{r}
+#Load Data
+
+
+file_path <- "C:/Users/lgianetti/OneDrive - City of Cambridge/DACSS Program/690V_data_viz/hw-4/Mass_Arrests.xlsx"
+
+my_data <- read_excel(path = file_path,
+    sheet = 1, col_names = TRUE, col_types = NULL, na = "", skip = 0)
+
+```
+
+I will do a quick look at the data
+
+```{r}
+#Look at Data
+str(my_data, width = 70,strict.width='cut')
+```
+
+Now I will clean the data by correcting the data types and checking for missing values and outliers. I will also convert the appropriate columns to factors and numeric types as needed.
+
+```{r}
+#Clean Data
+my_data$`Arrest Location` <- factor(my_data$`Arrest Location`)
+my_data$`Arrest Offense by UCR Code` <- factor(my_data$`Arrest Offense by UCR Code`)
+my_data$`Arrest Type` <- factor(my_data$`Arrest Type`)
+my_data$`Sex` <- factor(my_data$`Sex`)
+my_data$`Race` <- factor(my_data$`Race`)
+my_data$`Ethnicity` <- factor(my_data$`Ethnicity`)
+my_data$`Agency` <- factor(my_data$`Agency`)
+my_data$`Incident Number` <- factor(my_data$`Incident Number`)
+
+
+
+str(my_data, width = 70,strict.width='cut')
+summary(my_data) # check for missing values and outliers
+
+
+
+```
+
