@@ -129,12 +129,12 @@ barDodge1_pct= base1_pct +  geom_bar(stat="identity",
                             
 common_text_size <- 10
 
-barDodge1_pct + labs(title = "Across all genders, the distribution of arrests is dominated by misdemeanors",
+barDodge1_pct + labs(title = "Across All Genders, the Distribution of Arrests is Dominated by Misdemeanors",
                  subtitle = "Arrests by type from January 1, 2019 to March 28, 2020",
                  x="",
-                 y="Share of Arrests (%)",
+                 y="Share of all arrests (%)",
                  fill="",
-                 caption = "Source: Mass-Arrests.xlsx") +  
+                 caption = "Source: Mass-Arrests.xlsx\n44 cases of unknown arrest type excluded from plot") +  
             theme_classic() +
   theme(
     legend.position = "bottom",
@@ -161,9 +161,104 @@ barDodge1_pct + labs(title = "Across all genders, the distribution of arrests is
              linetype = "dashed", 
              color = "gray70")
 
+#add 44 cases of unkow type exluded from the plot as a note in the caption
+
                     
 ```
 ```{r}
 saveRDS(barDodge1_pct, file = "plot1.rds")
+```
+
+```{r}
+#box plot to understand age distribution by arrest type without NA
+
+my_data_no_na <- my_data |>
+  filter(!is.na(`Arrest Type`))
+
+overall_median <- median(my_data_no_na$Age, na.rm = TRUE)
+
+order_levels <- my_data_no_na %>%
+  group_by(`Arrest Type`) %>%
+  summarize(median_age = median(Age, na.rm = TRUE)) %>%
+  arrange(median_age) %>%
+  pull(`Arrest Type`)
+
+my_data_no_na$`Arrest Type` <- factor(
+  my_data_no_na$`Arrest Type`,
+  levels = order_levels
+)
+
+boxplot_age = ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
+  geom_boxplot() +
+  scale_x_discrete(labels = c(
+    "M" = "Misdemeanor",
+    "F" = "Felony",
+    "W" = "Warrant",
+    "O" = "Other"
+  )) +
+  labs(title = "Age Distribution by Arrest Type",
+       x = "Arrest Type",
+       y = "Age") +
+  theme_classic() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.title.x = element_text(size = common_text_size),
+    axis.title.y = element_text(size = common_text_size),
+    axis.text.x = element_text(size = common_text_size),
+    axis.text.y = element_text(size = common_text_size)
+  ) +
+  geom_hline(yintercept = overall_median,
+             linetype = "dashed",
+             color = "red")
+boxplot_age
+```
+
+```{r}
+box_violin <- ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
+  geom_hline(yintercept = c(20, 40, 60, 80),
+             linetype = "dashed",
+             color = "gray70") +
+  geom_hline(yintercept = overall_median,
+             linetype = "solid",
+             color = "red") +
+  geom_violin(fill = "#4FA3D1", alpha = 0.65) +
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) +
+  geom_text(
+  stat = "summary",
+  fun = median,
+  aes(label = round(..y.., 1)),
+  vjust = -0.7,
+  size = common_text_size / 3) +
+  annotate("text",
+           x = .585,
+           y = overall_median + 1.5,
+           label = paste("Median Arrest\nAge =", round(overall_median, 1)),
+           color = "red",
+           size = 3) +
+  scale_x_discrete(labels = c(
+    "M" = "Misdemeanor",
+    "F" = "Felony",
+    "W" = "Warrant",
+    "O" = "Other"
+  )) +
+  labs(
+    title = "Across All Arrest Types, Arrest Age Distributions Cluster in the 20s and 30s",
+    subtitle = "Median ages are similar across offense types, with only modest variation",
+    x = "",
+    y = "Age at Time of Arrest",
+    caption = "Source: Mass-Arrests.xlsx\n44 cases of unknown arrest type excluded from plot"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.title.x = element_text(size = common_text_size),
+    axis.title.y = element_text(size = common_text_size),
+    axis.text.x = element_text(size = common_text_size),
+    axis.text.y = element_text(size = common_text_size)
+  )
+
+box_violin
+
+
 ```
 
