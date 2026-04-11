@@ -11,8 +11,7 @@ rm(list = ls()) # clean memory
 library(tidyverse)
 library(readxl)
 library(ggplot2)
-library(qicharts2)
-library(scales)
+
 
 ```
 
@@ -56,5 +55,115 @@ summary(my_data) # check for missing values and outliers
 
 
 
+```
+```{r}
+# contingency table of counts
+# independent variable in the columns - sex
+# dependent variable in the rows - Arrest Type
+(ArrestSex=table(my_data$'Arrest Type',my_data$Sex))
+
+#choosing to exclude the 44 NA values in the table
+```
+```{r}
+#marginal percentage (per column) from contingency table
+
+ArrestSex.prop = prop.table(ArrestSex,2) |> 
+  round(3)
+
+ArrestSex.prop
+```
+```{r}
+#making a data frame from the contingency table
+ArrestSexDF=as.data.frame(ArrestSex)
+names(ArrestSexDF)=c("Arrest Type","Sex","counts")
+
+#adding marginal shares as percentages:
+ArrestSexDF$pctCol=100*as.data.frame(ArrestSex.prop)[,3]
+
+ArrestSexDF
+```
+
+```{r}
+ggplot(data=ArrestSexDF, 
+             aes(x=`Arrest Type`, y=counts)) + geom_bar(stat="identity")
+
+```
+
+```{r}
+base1=ggplot(data=ArrestSexDF,
+             aes(x=`Arrest Type`, y=counts,
+                 fill=Sex)) 
+barDodge1= base1 +  geom_bar(stat="identity",
+                            position ='dodge') 
+barDodge1 
+```
+
+```{r}
+#cleaning up the order the arrest type shows in the plot
+ArrestSexDF$`Arrest Type` <- factor(
+  ArrestSexDF$`Arrest Type`,
+  levels = c("M", "W", "F", "O")
+)
+base1_pct=ggplot(data=ArrestSexDF,
+             aes(x=`Arrest Type`, y=pctCol,
+                 fill=reorder(Sex,pctCol))) # reordering
+barDodge1_pct= base1_pct +  geom_bar(stat="identity",
+                            position ='dodge')+
+  scale_x_discrete(labels = c(
+    "M" = "Misdemeanor",
+    "F" = "Felony",
+    "W" = "Warrant",
+    "O" = "Other"
+  )) +
+  scale_fill_manual(
+    values = c(
+      "F" = "#0072B2",   # Blue
+      "M" = "#E69F00",   # Orange
+      "U" = "#009E73"    # Green
+    ),
+  labels = c(
+    "F" = "Female",
+    "M" = "Male",
+    "U" = "Unknown Gender"
+  ))
+                            
+common_text_size <- 10
+
+barDodge1_pct + labs(title = "Across all genders, the distribution of arrests is dominated by misdemeanors",
+                 subtitle = "Arrests by type from January 1, 2019 to March 28, 2020",
+                 x="",
+                 y="Share of Arrests (%)",
+                 fill="",
+                 caption = "Source: Mass-Arrests.xlsx") +  
+            theme_classic() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    plot.title = element_text(
+      face = "bold",      
+      size = 16
+  )
+    ) +
+  theme(
+    # Axis labels
+    axis.title.x = element_text(size = common_text_size),
+    axis.title.y = element_text(size = common_text_size),
+    
+    # Tick labels
+    axis.text.x = element_text(size = common_text_size),
+    axis.text.y = element_text(size = common_text_size),
+    
+    # Legend text
+    legend.text = element_text(size = common_text_size),
+    legend.title = element_text(size = common_text_size)
+  ) + 
+  geom_hline(yintercept = c(20, 40, 60), 
+             linetype = "dashed", 
+             color = "gray70")
+
+                    
+```
+```{r}
+saveRDS(barDodge1_pct, file = "plot1.rds")
 ```
 
