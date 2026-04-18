@@ -1,0 +1,30 @@
+---
+title: "Lee Gianetti's Homework 4"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    
+    
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard) # always
+```
+
+## Column {.tabset .tabset-fade}
+
+### Student Teacher Ratio by County
+
+```{r}
+## for del1Draft.rds
+link1="https://github.com/dataviz690/hw-4/raw/main/plot1.rds"
+readRDS(url(link1))
+```
+
+### Distribution of Students by County
+
+```{r}
+## for del2Draft.rds
+link2="https://github.com/dataviz690/hw-4/raw/main/plot2.rds"
+readRDS(url(link2))
+```
