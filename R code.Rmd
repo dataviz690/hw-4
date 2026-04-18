@@ -371,7 +371,7 @@ scat_text = scat_text +
     subtitle = "Peru stands out with high average daily deaths compared to cases",
     x = "Average Daily Deaths (log scale)",
     y = "Average Daily Cases (log scale)",
-    caption = "Source: covid-19.csv\nData filtered for 2020 and South American countries only"
+    caption = "Source: covid-19.csv\nDaily smoothed values were averaged to produce country-level measures"
   ) +  
   theme_classic() +
   theme(
