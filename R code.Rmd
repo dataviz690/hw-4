@@ -128,9 +128,10 @@ barDodge1_pct= base1_pct +  geom_bar(stat="identity",
     "U" = "Unknown Gender"
   ))
                             
-common_text_size <- 10
+common_text_size <- 9.5
+common_title_size <-11
 
-barDodge1_pct + labs(title = "Across All Genders, the Distribution of Arrests is Dominated by Misdemeanors",
+barDodge1_pct= barDodge1_pct + labs(title = "Across Genders, Distribution of Arrests is Dominated\nby Misdemeanors",
                  subtitle = "Arrests by type from January 1, 2019 to March 28, 2020",
                  x="",
                  y="Share of all arrests (%)",
@@ -142,7 +143,7 @@ barDodge1_pct + labs(title = "Across All Genders, the Distribution of Arrests is
     legend.direction = "horizontal",
     plot.title = element_text(
       face = "bold",      
-      size = 16
+      size = common_title_size
   )
     ) +
   theme(
@@ -163,7 +164,7 @@ barDodge1_pct + labs(title = "Across All Genders, the Distribution of Arrests is
              color = "gray70")
 
 #add 44 cases of unkow type exluded from the plot as a note in the caption
-
+barDodge1_pct
                     
 ```
 ```{r}
@@ -202,7 +203,7 @@ boxplot_age = ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
        y = "Age") +
   theme_classic() +
   theme(
-    plot.title = element_text(face = "bold", size = 16),
+    plot.title = element_text(face = "bold", size = common_title_size),
     axis.title.x = element_text(size = common_text_size),
     axis.title.y = element_text(size = common_text_size),
     axis.text.x = element_text(size = common_text_size),
@@ -223,7 +224,7 @@ box_violin <- ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
              linetype = "solid",
              color = "red") +
   geom_violin(fill = "#4FA3D1", alpha = 0.65) +
-  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) +
+  geom_boxplot(width = 0.185, fill = "white", outlier.shape = NA) +
   geom_text(
   stat = "summary",
   fun = median,
@@ -233,7 +234,7 @@ box_violin <- ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
   annotate("text",
            x = .585,
            y = overall_median + 1.5,
-           label = paste("Median Arrest\nAge =", round(overall_median, 1)),
+           label = paste("Median\nArrest\nAge =", round(overall_median, 1)),
            color = "red",
            size = 3) +
   scale_x_discrete(labels = c(
@@ -243,7 +244,7 @@ box_violin <- ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
     "O" = "Other"
   )) +
   labs(
-    title = "Across All Arrest Types, Arrest Age Distributions Cluster in the 20s and 30s",
+    title = "Across All Arrest Types, Arrest Age Distributions Cluster\nin the 20s and 30s",
     subtitle = "Median ages are similar across offense types, with only modest variation",
     x = "",
     y = "Age at Time of Arrest",
@@ -251,7 +252,7 @@ box_violin <- ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
   ) +
   theme_classic() +
   theme(
-    plot.title = element_text(face = "bold", size = 16),
+    plot.title = element_text(face = "bold", size = common_title_size),
     axis.title.x = element_text(size = common_text_size),
     axis.title.y = element_text(size = common_text_size),
     axis.text.x = element_text(size = common_text_size),
@@ -336,15 +337,16 @@ covid_sa_agg
 #creat a scatterplot
 base = ggplot(covid_sa_agg) 
 vars= base +  aes(x=mean_daily_deaths,y=mean_daily_cases)
-geoms=vars + geom_point(aes(color = highlight), size = 2.5)
+geoms=vars + geom_point(aes(color = highlight), size = 2.1)
 
 geoms  
 
 #apply log scale to both axes to better visualize the relationship between cases and deaths across countries with very different levels of cases and deaths
 
 geoms_log = geoms +scale_x_log10(
-    breaks = c(0.1, 0.3, 1, 3),
-    labels = c("0.1", "0.3", "1", "3")) +
+    breaks = c(0.1, 1, 10),
+    labels = c("0.1", "1", "10"),
+    limits = c(0.1, 10)) +
   scale_y_log10(
     breaks = c(10, 30, 100),
     labels = c("10", "30", "100")
@@ -365,8 +367,8 @@ scat_text = scat_text +
     values = c("Peru" = "firebrick", "Other" = "black")
   ) +
   labs(
-    title = "Average Daily COVID-19 Cases and Deaths Appear Positively Correlated amoung South Americaian Countries in 2020, ",
-    subtitle = "Peru stands out with relatively high average daily deaths compared to its average daily case levels",
+    title = "Average Daily COVID-19 Cases & Deaths Appear Positively Correlated\nAmong South Americaian Countries in 2020",
+    subtitle = "Peru stands out with high average daily deaths compared to cases",
     x = "Average Daily Deaths (log scale)",
     y = "Average Daily Cases (log scale)",
     caption = "Source: covid-19.csv\nData filtered for 2020 and South American countries only"
@@ -374,7 +376,7 @@ scat_text = scat_text +
   theme_classic() +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold", size = 16),
+    plot.title = element_text(face = "bold", size = common_title_size),
     axis.title.x = element_text(size = common_text_size),
     axis.title.y = element_text(size = common_text_size),
     axis.text.x = element_text(size = common_text_size),
