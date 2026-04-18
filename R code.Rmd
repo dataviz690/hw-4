@@ -360,7 +360,7 @@ cor.test(covid_sa_agg$mean_daily_deaths,covid_sa_agg$mean_daily_cases,method = "
 scat_text = geoms_log + 
   geom_text_repel(aes(label = Entity, color = highlight), size = 2.8)
 
-scat_text +
+scat_text = scat_text +
     scale_color_manual(
     values = c("Peru" = "firebrick", "Other" = "black")
   ) +
@@ -380,6 +380,7 @@ scat_text +
     axis.text.x = element_text(size = common_text_size),
     axis.text.y = element_text(size = common_text_size)
   )
+scat_text
 
 ```
 ```{r}
