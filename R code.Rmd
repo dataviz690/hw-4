@@ -11,6 +11,7 @@ rm(list = ls()) # clean memory
 library(tidyverse)
 library(readxl)
 library(ggplot2)
+library(ggrepel)
 
 
 ```
@@ -260,5 +261,128 @@ box_violin <- ggplot(my_data_no_na, aes(x = `Arrest Type`, y = Age)) +
 box_violin
 
 
+```
+
+```{r}
+saveRDS(box_violin, file = "plot2.rds")
+```
+
+```{r}
+
+
+my_data_covid <- read_csv("C:/Users/lgianetti/OneDrive - City of Cambridge/DACSS Program/690V_data_viz/hw-4/covid-19.csv",
+    col_names = TRUE, col_types = NULL, na = "", skip = 0)
+
+str(my_data_covid, width = 70,strict.width='cut')
+
+```
+```{r}
+
+#Clean Data
+my_data_covid$`Entity` <- factor(my_data_covid$`Entity`)
+my_data_covid$`date` <- as.Date(my_data_covid$`date`)
+
+
+str(my_data_covid, width = 70,strict.width='cut')
+summary(my_data_covid) # check for missing values and outliers
+```
+```{r}
+#create list of south american countries
+south_american_countries <- c(
+  "Argentina",
+  "Bolivia",
+  "Brazil",
+  "Chile",
+  "Colombia",
+  "Ecuador",
+  "Guyana",
+  "Paraguay",
+  "Peru",
+  "Suriname",
+  "Uruguay",
+  "Venezuela"
+)
+
+#filter data for south american countries and only for 2020 and remove na values
+my_data_covid_sa <- my_data_covid |>
+  filter(Entity %in% south_american_countries,
+  year == "2020",
+  !is.na(daily_cases_mean),
+  !is.na(daily_deaths_mean)
+  )
+  
+
+summary(my_data_covid_sa)
+
+```
+
+```{r}
+#Aggregate the mean cases for each country to ahow Average daily case levels over the year
+covid_sa_agg <- my_data_covid_sa |>
+  group_by(Entity) |>
+  summarize(mean_daily_cases = mean(daily_cases_mean, na.rm = TRUE),
+            mean_daily_deaths = mean(daily_deaths_mean, na.rm = TRUE)) |>
+  arrange(desc(mean_daily_cases))
+
+#adding peru highlight based on findings
+covid_sa_agg <- covid_sa_agg |>
+  mutate(highlight = ifelse(Entity == "Peru", "Peru", "Other"))
+
+covid_sa_agg
+
+```
+
+```{r}
+#creat a scatterplot
+base = ggplot(covid_sa_agg) 
+vars= base +  aes(x=mean_daily_deaths,y=mean_daily_cases)
+geoms=vars + geom_point(aes(color = highlight), size = 2.5)
+
+geoms  
+
+#apply log scale to both axes to better visualize the relationship between cases and deaths across countries with very different levels of cases and deaths
+
+geoms_log = geoms +scale_x_log10(
+    breaks = c(0.1, 0.3, 1, 3),
+    labels = c("0.1", "0.3", "1", "3")) +
+  scale_y_log10(
+    breaks = c(10, 30, 100),
+    labels = c("10", "30", "100")
+  )
+
+geoms_log
+```
+```{r}
+cor.test(covid_sa_agg$mean_daily_deaths,covid_sa_agg$mean_daily_cases,method = "pearson")
+```
+```{r}
+#add labels to the scatterplot
+scat_text = geoms_log + 
+  geom_text_repel(aes(label = Entity, color = highlight), size = 2.8)
+
+scat_text +
+    scale_color_manual(
+    values = c("Peru" = "firebrick", "Other" = "black")
+  ) +
+  labs(
+    title = "Average Daily COVID-19 Cases and Deaths Appear Positively Correlated amoung South Americaian Countries in 2020, ",
+    subtitle = "Peru stands out with relatively high average daily deaths compared to its average daily case levels",
+    x = "Average Daily Deaths (log scale)",
+    y = "Average Daily Cases (log scale)",
+    caption = "Source: covid-19.csv\nData filtered for 2020 and South American countries only"
+  ) +  
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 16),
+    axis.title.x = element_text(size = common_text_size),
+    axis.title.y = element_text(size = common_text_size),
+    axis.text.x = element_text(size = common_text_size),
+    axis.text.y = element_text(size = common_text_size)
+  )
+
+```
+```{r}
+saveRDS(scat_text, file = "plot3.rds")
 ```
 
