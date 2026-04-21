@@ -1,0 +1,196 @@
+---
+title: "hw-4 code"
+output: html_notebook
+---
+
+First i will load library and clean memory
+
+```{r}
+# clean memory
+rm(list = ls()) 
+
+# location of the data
+link="https://github.com/DACSS-Visual/tabular_multivar/raw/main/data/safeCities_ecoUI.xlsx"
+
+# 'rio' can be used to import EXCEL files:
+library(rio)
+safeALL=import(link)
+
+drop=c("Overall_Score")
+keep=setdiff(names(safeALL),drop)
+safe = safeALL[,keep]
+
+str(safe,nchar.max = 60,strict.width='cut')
+
+library(reshape2)
+
+safeL=melt(safe, # all the data
+           id.vars = 'city') # unique id per row
+head(safeL)
+
+library(ggplot2)
+
+safeL$type=ifelse(grepl("_In_",safeL$variable),'input','output')
+
+safeL$variable=sub("_In_|_Out_",'_',safeL$variable)
+
+# now we have:
+head(safeL)
+
+safeL$dimension=substr(safeL$variable, 1, 1)
+safeL$variable=gsub("^[A-Z]_", "", safeL$variable)
+
+#then
+safeL|>head()
+
+
+```
+```{r}
+# Average by city and dimension
+safe_avg = aggregate(value ~ city + type + dimension, 
+                            data = safeL, 
+                            FUN = mean, 
+                            na.rm = TRUE)
+
+# Check the result
+head(safe_avg)
+
+newLevels=c('DIGI','ENVIR','HEALTH','INFRA','PERS')
+safe_avg$dimension=factor(safe_avg$dimension,
+                          levels = c("D","E","H","I","P"),
+                          labels = newLevels,ordered = F)
+
+# different data frames
+safe_avg_out=safe_avg[safe_avg$type=='output',]
+safe_avg_in=safe_avg[safe_avg$type=='input',]
+```
+```{r}
+allIN=safe[,c(grep("_In_", names(safe) ))]
+names(allIN)
+
+rownames(allIN)=safe$city
+
+##
+head(allIN)
+
+library(polycor)
+library(psych)
+
+#### notice you may need to install 'polycor' and 'psych'
+## compute CM 
+CM=polycor::hetcor(allIN)$correlations # 'hetcor' in case you have numerical and categorical
+
+##CM is suitable
+KMO_tested=psych::KMO(CM) 
+##KMO measures how much the variables share common variance
+##low values mean a variable is mostly noise
+KMO_tested$MSA
+
+# only the variables with a proper MSAi will remain
+keep_vars = KMO_tested$MSAi >= 0.5
+allIN_kmo_ok = allIN[, keep_vars]
+ncol(allIN_kmo_ok)
+
+## Detect the dimensions
+CM_kmo_ok=polycor::hetcor(allIN_kmo_ok)$correlations
+psych::fa.parallel(CM_kmo_ok, fm = "pa", fa = "fa",plot = F,n.obs = nrow(allIN_kmo_ok))
+
+#4. Compute the new dimensions
+res_fa = psych::fa(CM_kmo_ok, n.obs = nrow(allIN_kmo_ok),
+                    nfactors = 3, rotate = "varimax", fm = "pa")
+
+print(res_fa$loadings)
+```
+```{r}
+city_scores = psych::factor.scores(allIN_kmo_ok, res_fa)$scores|>as.data.frame()
+head(city_scores)
+
+# normalizing
+library(BBmisc)
+
+efa_scores_norm=normalize(city_scores, 
+                       method = "range", 
+                       margin=2, # by column
+                       range = c(0, 100))
+
+# new  vars
+
+city_scores$governance=efa_scores_norm[,1]
+city_scores$health_system=efa_scores_norm[,2]
+city_scores$preparedness=efa_scores_norm[,3]
+
+city_scores[,4:6]
+```
+
+```{r}
+##reshaping
+city_scores_wide=city_scores[,4:6]
+city_scores_wide$city=rownames(city_scores_wide)
+city_scores_long=melt(city_scores_wide,id.vars = 'city')
+
+##plotting
+baseefa=ggplot(data=city_scores_long) + theme_classic() 
+
+varsefa=baseefa + aes(x=reorder(city, value,median),y=value)
+
+geomsefa= varsefa + geom_point(shape=5, aes(color=value>75))+
+                    geom_segment(aes(x=city,y=0,yend = value,xend = city),
+                                 color='grey70',linewidth=0.2)
+org_plot = geomsefa +  facet_grid(~variable) + coord_flip() +
+            theme(axis.text.y = element_text(size = 10)) +
+            labs(title = "Safety of Cities",
+                 subtitle = "A 3-dimensional approach",
+                 x="", y='Scores', color="Above 75 points")
+org_plot
+```
+
+```{r}
+saveRDS(org_plot, file = "plot4.rds")
+```
+
+improved plot
+
+```{r}
+city_scores = psych::factor.scores(allIN_kmo_ok, res_fa)$scores|>as.data.frame()
+head(city_scores)
+
+# normalizing
+library(BBmisc)
+
+efa_scores_norm=normalize(city_scores, 
+                       method = "range", 
+                       margin=2, # by column
+                       range = c(0, 100))
+
+# new  vars
+
+city_scores$governance=efa_scores_norm[,1]
+city_scores$health_system=efa_scores_norm[,2]
+city_scores$preparedness=efa_scores_norm[,3]
+
+city_scores[,4:6]
+```
+
+```{r}
+##reshaping
+city_scores_wide=city_scores[,4:6]
+city_scores_wide$city=rownames(city_scores_wide)
+city_scores_long=melt(city_scores_wide,id.vars = 'city')
+
+##plotting
+baseefa=ggplot(data=city_scores_long) + theme_classic() 
+
+varsefa=baseefa + aes(x=reorder(city, value,median),y=value)
+
+geomsefa= varsefa + geom_point(shape=5, aes(color=value>75))+
+                    geom_segment(aes(x=city,y=0,yend = value,xend = city),
+                                 color='grey70',linewidth=0.2)
+org_plot = geomsefa +  facet_grid(~variable) + coord_flip() +
+            theme(axis.text.y = element_text(size = 10)) +
+            labs(title = "Safety of Cities",
+                 subtitle = "A 3-dimensional approach",
+                 x="", y='Scores', color="Above 75 points")
+org_plot
+```
+```
+
