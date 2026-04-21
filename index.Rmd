@@ -42,3 +42,15 @@ readRDS(url(link2))
 link3="https://github.com/dataviz690/hw-4/raw/main/plot3.rds"
 readRDS(url(link3))
 ```
+
+### Improve Plots Title
+
+#### Row
+
+```{r}
+link4="https://github.com/dataviz690/hw-4/raw/main/plot4.rds"
+readRDS(url(link4))
+
+link5="https://github.com/dataviz690/hw-4/raw/main/plot5.rds"
+readRDS(url(link5))
+```
