@@ -7,11 +7,7 @@ output:
     
 ---
 
-```{css, echo=FALSE}
-.fluid-row {
-  font-size: 5.9vw;
-}
-```  
+ 
 
 ```{r setup, include=FALSE}
 library(flexdashboard) # always
@@ -43,14 +39,15 @@ link3="https://github.com/dataviz690/hw-4/raw/main/plot3.rds"
 readRDS(url(link3))
 ```
 
-### Improve Plots Title
+### Urban Safety
 
-#### Row
 
-```{r}
-link4="https://github.com/dataviz690/hw-4/raw/main/plot4.rds"
-readRDS(url(link4))
+```{r fig.width=18, fig.height=10, out.width='100%'}
+#link4="https://github.com/dataviz690/hw-4/raw/main/plot4.rds"
+#readRDS(url(link4))
 
-link5="https://github.com/dataviz690/hw-4/raw/main/plot5.rds"
-readRDS(url(link5))
+#link5="https://github.com/dataviz690/hw-4/raw/main/plot5.rds"
+#readRDS(url(link5))
+link6="https://github.com/dataviz690/hw-4/raw/main/plot45.rds"
+readRDS(url(link6))
 ```
