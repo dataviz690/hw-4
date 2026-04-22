@@ -39,7 +39,7 @@ link3="https://github.com/dataviz690/hw-4/raw/main/plot3.rds"
 readRDS(url(link3))
 ```
 
-### Urban Safety
+### Plot Improvement
 
 
 ```{r fig.width=18, fig.height=10, out.width='100%'}
