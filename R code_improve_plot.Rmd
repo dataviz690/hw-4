@@ -253,7 +253,7 @@ org_plot2 = geomsefa +
         plot.title = element_text(face = "bold")) +
   labs(
     title = "Cities Show Wide Variation Across Three EFA-Derived Dimensions",
-    subtitle = "Strong performance in foundational services does not generally translate\nto healthcare or preparedness",
+    subtitle = "Strong performance in foundational services dimension does not generally translate\nto healthcare or preparedness dimensions",
     x = "",
     y = "",
     caption = "Source: safeCities_ecoUI.xlsx\nScores are normalized to a 0–100 scale; filled points indicate values ≥75"
