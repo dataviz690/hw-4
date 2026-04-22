@@ -164,9 +164,9 @@ efa_scores_norm=normalize(city_scores,
 
 # new  vars
 
-city_scores$governance=efa_scores_norm[,1]
-city_scores$health_system=efa_scores_norm[,2]
-city_scores$preparedness=efa_scores_norm[,3]
+city_scores$'Foundational Services/Governance' = efa_scores_norm[,1]
+city_scores$'Healthcare Performance' = efa_scores_norm[,2]
+city_scores$'Crisis Preparedness/Resilience' = efa_scores_norm[,3]
 
 city_scores[,4:6]
 ```
@@ -182,8 +182,13 @@ baseefa=ggplot(data=city_scores_long) + theme_classic()
 
 varsefa=baseefa + aes(x=reorder(city, value,median),y=value)
 
-geomsefa= varsefa + geom_point(shape=5, aes(color=value>75))+
-                    geom_segment(aes(x=city,y=0,yend = value,xend = city),
+geomsefa= varsefa + geom_point(shape=21, color = "black", size = 2.5, stroke = .6, aes(fill=value>75))+
+                    scale_fill_manual(
+                        values = c("TRUE" = "black", "FALSE" = "white"),
+                        labels = c("FALSE" = "Below 75", "TRUE" = "75 or higher"),
+                        name = "Score Threshold"
+                      ) +
+                      geom_segment(aes(x=city,y=0,yend = value,xend = city),
                                  color='grey70',linewidth=0.2)
 org_plot = geomsefa +  facet_grid(~variable) + coord_flip() +
             theme(axis.text.y = element_text(size = 10)) +
@@ -192,5 +197,87 @@ org_plot = geomsefa +  facet_grid(~variable) + coord_flip() +
                  x="", y='Scores', color="Above 75 points")
 org_plot
 ```
+
+REORDER CITY
+
+```{r}
+
+library(dplyr)
+city_scores_wide = city_scores[,4:6]
+city_scores_wide$city = rownames(city_scores_wide)
+
+city_order <- city_scores_wide |>
+  arrange(desc(`Foundational Services/Governance`)) |>
+  pull(city)
+
+city_scores_long = melt(
+  city_scores_wide,
+  id.vars = "city"
+)
+
+city_scores_long$city <- factor(city_scores_long$city, levels = rev(city_order))
+```
+
+
+```{r}
+baseefa = ggplot(data = city_scores_long) + theme_classic()
+
+varsefa = baseefa + aes(x = city, y = value)
+
+geomsefa = varsefa +
+  geom_point(
+    shape = 21,
+    color = "black",
+    size = 2.5,
+    stroke = .8,
+    aes(fill = value > 75)
+  ) +
+  scale_fill_manual(
+    values = c("TRUE" = "black", "FALSE" = "white"),
+    labels = c("FALSE" = "Below 75", "TRUE" = "75 or higher"),
+    name = "Score Threshold"
+  ) +
+  geom_segment(
+    aes(x = city, y = 0, yend = value, xend = city),
+    color = "grey70",
+    linewidth = 0.2
+  ) +
+  geom_hline(yintercept = 75, linetype = "dashed", color = "grey80") 
+  
+
+org_plot2 = geomsefa +
+  facet_grid(~variable) +
+  coord_flip() +
+  theme(axis.text.y = element_text(size = 10)) +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold")) +
+  labs(
+    title = "Cities Show Wide Variation Across Three EFA-Derived Dimensions",
+    subtitle = "Strong performance in foundational services does not generally translate\nto healthcare or preparedness",
+    x = "",
+    y = "",
+    caption = "Source: safeCities_ecoUI.xlsx\nScores are normalized to a 0–100 scale; filled points indicate values ≥75"
+  )
+
+org_plot2
+```
+```{r}
+saveRDS(org_plot2, file = "plot5.rds")
+```
+
+
+```{r}
+library(patchwork)
+
+p4 <- readRDS("plot4.rds")
+p5 <- readRDS("plot5.rds")
+
+combined_plot <- p4 + p5 + plot_layout(ncol = 2)
+
+saveRDS(combined_plot, "plot45.rds")
+```
+```{r}
+combined_plot
+
 ```
 
